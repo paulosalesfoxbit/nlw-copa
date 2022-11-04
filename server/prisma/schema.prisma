@@ -15,8 +15,53 @@ datasource db {
 }
 
 model Bolao {
-  id       String   @id @default(cuid())
-  codigo   String   @unique
-  titulo   String
-  dtCriado DateTime @default(now())
+  id            String         @id @default(cuid())
+  codigo        String         @unique
+  titulo        String
+  dtCriado      DateTime       @default(now())
+  participantes Participante[]
+
+  criadorId String?
+  criador   Usuario? @relation(fields: [criadorId], references: [id])
+}
+
+model Usuario {
+  id                 String         @id @default(cuid())
+  nome               String
+  email              String         @unique
+  avatarUrl          String?
+  dtCriado           DateTime       @default(now())
+  criadorBoloes      Bolao[]
+  participanteBoloes Participante[]
+}
+
+model Participante {
+  id        String    @id @default(cuid())
+  bolao     Bolao     @relation(fields: [bolaoId], references: [id])
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id])
+  usuarioId String
+  bolaoId   String
+  Palpite   Palpite[]
+
+  @@unique([usuarioId, bolaoId])
+}
+
+model Jogo {
+  id                   String    @id @default(cuid())
+  data                 DateTime
+  firstTeamIsoCountry  String
+  secondTeamIsoCountry String
+  palpites             Palpite[]
+}
+
+model Palpite {
+  id               String   @id @default(cuid())
+  firstTeamPoints  Int
+  secondTeamPoints Int
+  dtCriado         DateTime @default(now())
+
+  participante   Participante @relation(fields: [participanteId], references: [id])
+  jogo           Jogo         @relation(fields: [jogoId], references: [id])
+  jogoId         String
+  participanteId String
 }
