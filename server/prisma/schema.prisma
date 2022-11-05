@@ -30,6 +30,7 @@ model Usuario {
   nome               String
   email              String         @unique
   avatarUrl          String?
+  googleId           String?
   dtCriado           DateTime       @default(now())
   criadorBoloes      Bolao[]
   participanteBoloes Participante[]
@@ -64,4 +65,6 @@ model Palpite {
   jogo           Jogo         @relation(fields: [jogoId], references: [id])
   jogoId         String
   participanteId String
+
+  @@unique([jogoId, participanteId])
 }

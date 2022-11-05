@@ -1,13 +1,12 @@
 import cors from "@fastify/cors";
+import jwt from "@fastify/jwt";
 import Fastify from "fastify";
+import { AuthRouter } from "./routes/auth";
 
-import { PrismaClient } from "@prisma/client";
-import ShortUniqueId from "short-unique-id";
-import z from "zod";
-
-const prisma = new PrismaClient({
-  log: ["query"],
-});
+import { BolaoRouter } from "./routes/bolao";
+import { JogoRouter } from "./routes/jogo";
+import { PalpiteRouter } from "./routes/palpite";
+import { UsuarioRouter } from "./routes/usuario";
 
 async function start() {
   const fastify = Fastify({
@@ -18,46 +17,17 @@ async function start() {
     origin: true,
   });
 
-  fastify.get("/usuario/count", async () => {
-    const count = await prisma.usuario.count();
-
-    return { count };
+  await fastify.register(jwt, {
+    secret: "meusegredo-nlwcopa",
   });
 
-  fastify.get("/palpite/count", async () => {
-    const count = await prisma.palpite.count();
+  await fastify.register(AuthRouter);
+  await fastify.register(BolaoRouter);
+  await fastify.register(PalpiteRouter);
+  await fastify.register(UsuarioRouter);
+  await fastify.register(JogoRouter);
 
-    return { count };
-  });
-
-  fastify.get("/bolao/count", async () => {
-    const count = await prisma.bolao.count();
-
-    return { count };
-  });
-
-  fastify.post("/bolao", async (req, res) => {
-    const createBody = z.object({
-      titulo: z.string(),
-    });
-
-    const codigoGen = new ShortUniqueId({ length: 6 });
-
-    const { body } = req;
-    const { titulo } = createBody.parse(body);
-    const codigo = String(codigoGen()).toUpperCase();
-
-    const bolao = await prisma.bolao.create({
-      data: {
-        titulo,
-        codigo,
-      },
-    });
-
-    return res.status(201).send(bolao);
-  });
-
-  await fastify.listen({ port: 3333 /*host: "0.0.0.0"*/ });
+  await fastify.listen({ port: 3333, host: "0.0.0.0" });
 }
 
 start();
