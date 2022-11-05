@@ -56,53 +56,57 @@ export async function BolaoRouter(fastify: FastifyInstance) {
     return bolao;
   });
 
-  fastify.get("/bolao/count", { onRequest: [AuthPlugin] }, async () => {
+  fastify.get("/bolao/count", async () => {
     const count = await prisma.bolao.count();
 
     return { count };
   });
 
-  fastify.get("/bolao/list", { onRequest: [AuthPlugin] }, async (req, res) => {
-    const lista = await prisma.bolao.findMany({
-      where: {
-        participantes: {
-          some: {
-            usuarioId: req.user.sub,
-          },
-        },
-      },
-      include: {
-        _count: {
-          select: {
-            participantes: true,
-          },
-        },
-        participantes: {
-          select: {
-            id: true,
-            usuario: {
-              select: {
-                avatarUrl: true,
-              },
+  fastify.get(
+    "/bolao/listar",
+    { onRequest: [AuthPlugin] },
+    async (req, res) => {
+      const lista = await prisma.bolao.findMany({
+        where: {
+          participantes: {
+            some: {
+              usuarioId: req.user.sub,
             },
           },
-          take: 4,
         },
-        criador: {
-          select: {
-            id: true,
-            nome: true,
-            avatarUrl: true,
+        include: {
+          _count: {
+            select: {
+              participantes: true,
+            },
+          },
+          participantes: {
+            select: {
+              id: true,
+              usuario: {
+                select: {
+                  avatarUrl: true,
+                },
+              },
+            },
+            take: 4,
+          },
+          criador: {
+            select: {
+              id: true,
+              nome: true,
+              avatarUrl: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    return res.send(lista);
-  });
+      return res.send(lista);
+    }
+  );
 
   fastify.post(
-    "/bolao/:id/participar",
+    "/bolao/participar",
     { onRequest: [AuthPlugin] },
     async (req, res) => {
       const participarSchema = z.object({
@@ -141,14 +145,21 @@ export async function BolaoRouter(fastify: FastifyInstance) {
           });
         }
 
-        const criadoParticipante = await prisma.participante.create({
-          data: {
+        const participante = await prisma.participante.upsert({
+          where: {
+            usuarioId_bolaoId: {
+              bolaoId: bolao.id,
+              usuarioId: req.user.sub,
+            },
+          },
+          update: {},
+          create: {
             bolaoId: bolao.id,
             usuarioId: req.user.sub,
           },
         });
 
-        return res.status(201).send(criadoParticipante);
+        return res.status(201).send(bolao);
       } catch (e: any) {
         console.error(e);
         return res.status(500).send({ message: `Erro no servidor!` });

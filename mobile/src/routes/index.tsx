@@ -11,7 +11,7 @@ export function Routes() {
     // esta box evita um flick na mudanca de telas
     <Box flex={1} bg={'gray.900'}>
       <NavigationContainer>
-        {isLogged ? <AppRoutes /> : <SignIn />}:
+        {isLogged ? <AppRoutes /> : <SignIn />}
       </NavigationContainer>
     </Box>
   )

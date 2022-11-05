@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTheme } from 'native-base';
 import { PlusCircle, SoccerBall } from 'phosphor-react-native';
-import { Platform } from 'react-native';
+import { Detail } from '../screens/Detail';
 
 import { Find } from '../screens/Find';
 import { New } from '../screens/New';
@@ -18,17 +18,13 @@ export function AppRoutes() {
       screenOptions={{
         headerShown: false,
         tabBarLabelPosition: 'beside-icon',
-        tabBarActiveTintColor: colors.yellow[500],
+        tabBarActiveTintColor: colors.yellow[600],
         tabBarInactiveTintColor: colors.gray[300],
         tabBarStyle: {
-          position: 'absolute',
-          height: sizes[22],
+          height: sizes[20],
           borderTopColor: colors.gray[800]
         },
-        tabBarItemStyle: {
-          position: 'absolute',
-          top: Platform.OS === 'android' ? -10 : 0
-        }
+        tabBarItemStyle: {}
       }}
     >
       <Screen
@@ -50,6 +46,13 @@ export function AppRoutes() {
       <Screen
         name="find"
         component={Find}
+        options={{
+          tabBarButton: () => null
+        }}
+      />
+      <Screen
+        name="details"
+        component={Detail}
         options={{
           tabBarButton: () => null
         }}

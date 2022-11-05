@@ -36,8 +36,6 @@ export async function AuthRouter(fastify: FastifyInstance) {
 
     const userInfo = userInfoSchema.parse(dataUsuario);
 
-    console.log("...... Google.userinfo", userInfo);
-
     const criadoUsuario = await prisma.usuario.upsert({
       where: {
         email: userInfo.email,

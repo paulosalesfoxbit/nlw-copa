@@ -1,5 +1,6 @@
 import * as Google from 'expo-auth-session/providers/google';
 import { maybeCompleteAuthSession } from "expo-web-browser";
+import { useToast } from 'native-base';
 import { createContext, ReactNode, useEffect, useState } from "react";
 import { api } from '../clients/api';
 
@@ -25,20 +26,19 @@ interface AuthProviderProps {
 export const AuthContext = createContext({} as AuthContextDataProps)
 
 export function AuthContextProvider({ children }: AuthProviderProps) {
+  const toast = useToast();
   const [usuario, setUsuario] = useState<UsuarioProps>({} as UsuarioProps);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isLogged, setIsLogged] = useState<boolean>(false);
 
   const [_request, response, promptAsync] = Google.useAuthRequest({
-    clientId: '',
-    redirectUri: '',
+    clientId: process.env.GOOGLE_ID,
+    redirectUri: process.env.REDIRECT_URI,
     scopes: ['profile', 'email']
   })
 
   async function signIn() {
-    // Para pegar o redirect deep link com schema 
-    // console.log('>>>>> Vamos logar!', makeRedirectUri({ useProxy: true }))
-
+    // console.log('Para pegar o redirect deep link com schema !', makeRedirectUri({ useProxy: true }))
     try {
       setIsLoading(true)
       await promptAsync();
@@ -58,17 +58,9 @@ export function AuthContextProvider({ children }: AuthProviderProps) {
         access_token
       })
 
-      if (resSignUp.status !== 200) {
-        throw new Error(resSignUp.data)
-      }
-
-      api.defaults.headers.common["Authentication"] = `Bearer ${resSignUp.data.token}`
+      api.defaults.headers.common["Authorization"] = `Bearer ${resSignUp.data}`
 
       const resMe = await api.get('/me')
-
-      if (resMe.status !== 200) {
-        throw new Error(resSignUp.data)
-      }
 
       setUsuario(resMe.data)
       setIsLogged(true)
@@ -77,7 +69,11 @@ export function AuthContextProvider({ children }: AuthProviderProps) {
       setUsuario({} as UsuarioProps)
       setIsLogged(false)
       console.error(e)
-      throw e;
+      toast.show({
+        title: 'Não autorizado!',
+        placement: 'top',
+        bgColor: 'red.500'
+      })
     } finally {
       setIsLoading(false)
     }

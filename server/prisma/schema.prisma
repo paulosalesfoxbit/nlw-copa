@@ -14,17 +14,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Bolao {
-  id            String         @id @default(cuid())
-  codigo        String         @unique
-  titulo        String
-  dtCriado      DateTime       @default(now())
-  participantes Participante[]
-
-  criadorId String?
-  criador   Usuario? @relation(fields: [criadorId], references: [id])
-}
-
 model Usuario {
   id                 String         @id @default(cuid())
   nome               String
@@ -36,6 +25,25 @@ model Usuario {
   participanteBoloes Participante[]
 }
 
+model Bolao {
+  id            String         @id @default(cuid())
+  codigo        String         @unique
+  titulo        String
+  dtCriado      DateTime       @default(now())
+  participantes Participante[]
+
+  criadorId String?
+  criador   Usuario? @relation(fields: [criadorId], references: [id])
+}
+
+model Jogo {
+  id                   String    @id @default(cuid())
+  data                 DateTime
+  firstTeamIsoCountry  String
+  secondTeamIsoCountry String
+  palpites             Palpite[]
+}
+
 model Participante {
   id        String    @id @default(cuid())
   bolao     Bolao     @relation(fields: [bolaoId], references: [id])
@@ -45,14 +53,6 @@ model Participante {
   Palpite   Palpite[]
 
   @@unique([usuarioId, bolaoId])
-}
-
-model Jogo {
-  id                   String    @id @default(cuid())
-  data                 DateTime
-  firstTeamIsoCountry  String
-  secondTeamIsoCountry String
-  palpites             Palpite[]
 }
 
 model Palpite {
